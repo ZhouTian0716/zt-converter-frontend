@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { Box, Container, Typography } from "@mui/material";
 import logo from "../assets/converter-icon.png";
 import Input from "../components/Input/Input";
-import { getConvertFormState, setConvertRates } from "../redux/reducers/convertFormSlice";
+import { getConvertFormState, resetForm, setConvertRates } from "../redux/reducers/convertFormSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { useAddTransactionMutation, useGetConvertRatesQuery } from "../redux/api/convertApiSlice";
 import SwitchBtn from "../components/SwitchBtn";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Transactions from "./Transactions";
 
 const Converter = () => {
   const { convertForm } = useAppSelector(getConvertFormState);
@@ -17,7 +19,7 @@ const Converter = () => {
   const { data: rates, isLoading, isSuccess, isError, error } = useGetConvertRatesQuery(from);
   const [addTransaction, { isLoading: isAdding }] = useAddTransactionMutation();
 
-  const navigate= useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     isSuccess && dispatch(setConvertRates(rates));
@@ -25,6 +27,11 @@ const Converter = () => {
 
   // calculates
   const handleSubmit = () => {
+    if (!srcAmount) {
+      toast.error("Source amount is required");
+      return;
+    }
+
     const submitPayload = {
       sourceCurrency: from,
       sourceAmount: srcAmount,
@@ -34,8 +41,9 @@ const Converter = () => {
     };
     // console.log("data to submit", submitPayload);
     addTransaction(submitPayload);
-    if(!isAdding) {
-      navigate("/transactions")
+    if (!isAdding) {
+      dispatch(resetForm());
+      navigate("/transactions");
     }
   };
 
@@ -72,7 +80,7 @@ const Converter = () => {
           <small>Fee:</small>
           <span>{convertFee > 0 && `${convertFee} ${to}`}</span>
         </p>
-      </div>
+      </div> 
 
       <button className="btn-submit" type="button" onClick={handleSubmit} disabled={isAdding}>
         {isAdding ? "Sending" : "Submit"}

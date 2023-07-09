@@ -7,7 +7,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_SERVER_API;
 export const convertApiSlice = createApi({
   reducerPath: "convertApi",
   baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
-  tagTypes: ["Transactions", "Rates"],
+  tagTypes: ["Transactions"],
   endpoints: (builder) => ({
     getTransactions: builder.query<ITransaction[], void>({
       query: () => "/transactions",
@@ -15,15 +15,14 @@ export const convertApiSlice = createApi({
     }),
     getConvertRates: builder.query<Rates, CurrencyOption>({
       query: (srcISOCode) => `/rates/${srcISOCode}`,
-      providesTags: ["Rates"],
     }),
     addTransaction: builder.mutation<ITransaction, Partial<ICreateTransaction>>({
       query: (transaction) => ({
         url: "/transactions",
         method: "POST",
         body: transaction,
-        invalidatesTags: ["Transactions"],
       }),
+      invalidatesTags: ["Transactions"],
     }),
   }),
 });
